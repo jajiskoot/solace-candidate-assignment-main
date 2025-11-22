@@ -6,43 +6,30 @@ import { Advocate } from "@/db/schema";
 
 export default function Home() {
   const [advocates, setAdvocates] = useState<Advocate[]>([]);
-  const [filteredAdvocates, setFilteredAdvocates] = useState<Advocate[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
 
-  useEffect(() => {
+  const fetchAdvocates = (searchTerm = "") => {
     // paginate & pass search term query
-    fetch("/api/advocates").then((response) => {
+    fetch(`/api/advocates?searchTerm=${searchTerm}`).then((response) => {
       response.json().then((jsonResponse) => {
         setAdvocates(jsonResponse.data);
-        setFilteredAdvocates(jsonResponse.data);
       });
     });
+  }
+
+  useEffect(() => {
+    fetchAdvocates()
   }, []);
 
-  // debounce?
+  // debounce
   const onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     const searchTerm = e.target.value;
 
     setSearchTerm(searchTerm);
-
-    console.log("filtering advocates...");
-    const filteredAdvocates = advocates.filter((advocate) => {
-      return (
-        advocate.firstName.includes(searchTerm) ||
-        advocate.lastName.includes(searchTerm) ||
-        advocate.city.includes(searchTerm) ||
-        advocate.degree.includes(searchTerm)
-        // advocate.specialties.includes(searchTerm) ||
-        // advocate.yearsOfExperience.includes(searchTerm)
-      );
-    });
-
-    setFilteredAdvocates(filteredAdvocates);
   };
 
   const onClick = () => {
-    console.log(advocates);
-    setFilteredAdvocates(advocates);
+    fetchAdvocates(searchTerm)
   };
 
   return (
@@ -73,7 +60,7 @@ export default function Home() {
           </tr>
         </thead>
         <tbody>
-          {filteredAdvocates.map((advocate) => {
+          {advocates.map((advocate) => {
             return (
               <tr key={advocate.id}>
                 <td>{advocate.firstName}</td>
